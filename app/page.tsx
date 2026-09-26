@@ -1,5 +1,10 @@
+"use client";
 
 export default function Home() {
+  const handleStart = () => {
+    alert("Bienvenue sur KS SMS Send !");
+  };
+
   return (
     <main
       style={{
@@ -32,6 +37,7 @@ export default function Home() {
         </p>
 
         <button
+          onClick={handleStart}
           style={{
             width: "100%",
             padding: "15px",
