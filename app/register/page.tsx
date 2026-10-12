@@ -2,11 +2,13 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Stage = "email" | "otp";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
   const [stage, setStage] = useState<Stage>("email");
@@ -59,7 +61,7 @@ export default function RegisterPage() {
       });
       if (error) throw error;
       setNotice({ kind: "success", text: "Adresse e-mail confirmée. Votre session est ouverte." });
-      window.location.assign("/");
+      router.push("/");
     } catch (error) {
       setNotice({ kind: "error", text: error instanceof Error ? error.message : "Code invalide ou expiré. Demandez un nouveau code." });
     } finally {
@@ -115,15 +117,15 @@ export default function RegisterPage() {
             <button className="primaryButton authButton" type="submit" disabled={busy}>{busy ? "Vérification…" : "Confirmer mon e-mail"}</button>
             <div className="authActions">
               <button className="textButton" type="button" disabled={busy} onClick={resendCode}>Renvoyer un code</button>
-              <button className="textButton" type="button" disabled={busy} onClick={() => { setStage("email"); setToken(""); setNotice(null); }}>Modifier l'e-mail</button>
+              <button className="textButton" type="button" disabled={busy} onClick={() => { setStage("email"); setToken(""); setNotice(null); }}>Modifier l&apos;e-mail</button>
             </div>
           </form>
         )}
 
         {notice && <div className={"notice " + notice.kind} role="status" aria-live="polite">{notice.text}</div>}
-        <p className="authFoot">En créant un compte, vous acceptez d'utiliser le service conformément aux règles applicables et aux préférences de vos destinataires.</p>
+        <p className="authFoot">En créant un compte, vous acceptez d&apos;utiliser le service conformément aux règles applicables et aux préférences de vos destinataires.</p>
       </section>
-      <footer><span>© {new Date().getFullYear()} KS SMS Send</span><Link className="textButton" href="/">Retour à l'accueil</Link></footer>
+      <footer><span>© {new Date().getFullYear()} KS SMS Send</span><Link className="textButton" href="/">Retour à l&apos;accueil</Link></footer>
     </main>
   );
 }
