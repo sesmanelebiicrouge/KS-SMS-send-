@@ -1,48 +1,40 @@
-# KS SMS Send — version prête à déployer
+# KS SMS Send
 
-Cette version transforme l'ancien fichier HTML en projet Next.js structuré pour un déploiement Vercel.
+Application Next.js pour préparer des campagnes SMS.
 
-## Important
+## Prérequis
 
-Le projet est **prêt pour le déploiement**, mais il ne prétend pas encore envoyer des SMS réels ni traiter des cartes bancaires.
-
-Il faut encore connecter :
-1. une base de données pour les comptes, crédits et historiques ;
-2. un vrai système d'authentification serveur ;
-3. un fournisseur SMS/API ;
-4. un prestataire de paiement sécurisé.
-
-Ne mets jamais de numéro de carte, CVV ou OTP dans le code ou dans le chat.
+- Node.js compatible avec la version de Next.js installée
+- npm
+- Un projet Supabase pour l'authentification et la persistance (pas encore connecté à ce dépôt)
+- Un fournisseur SMS pris en charge, avec un compte et une clé API côté serveur
 
 ## Installation
 
 ```bash
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
-Puis ouvrir http://localhost:3000
+Commandes de vérification :
 
-## Variables d'environnement
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
 
-Copie `.env.example` vers `.env.local` et renseigne les valeurs nécessaires.
+## État actuel
 
-`SESSION_SECRET` doit être une longue valeur aléatoire.
+- Interface responsive de composition de SMS.
+- Nettoyage et dédoublonnage des destinataires dans l'interface.
+- Validation côté serveur du corps JSON, des numéros internationaux, des doublons et de la longueur du message.
+- Endpoint `GET /api/health` pour vérifier que l'application répond.
+- Endpoint `POST /api/sms/send` qui **refuse volontairement l'envoi** tant que l'authentification, les limites d'envoi, la journalisation et un fournisseur réel ne sont pas configurés.
 
-## Déploiement Vercel
+## Important avant la mise en production
 
-1. Mets ce dossier dans un dépôt GitHub.
-2. Importe le dépôt dans Vercel.
-3. Ajoute les variables d'environnement dans Vercel.
-4. Lance le déploiement.
+Aucun SMS réel ne sera envoyé par cette version. Il faut encore choisir le fournisseur SMS, connecter Supabase, mettre en place l'authentification serveur, les politiques RLS, une limitation de débit durable, une protection contre les envois répétés, les journaux d'audit et les statuts de livraison. Ne jamais exposer une clé secrète du fournisseur dans le navigateur ni la committer dans Git.
 
-Le endpoint `/api/health` permet de vérifier l'état des intégrations.
-
-## Architecture suivante
-
-- Next.js App Router
-- API Route pour health check
-- configuration par variables d'environnement
-- interface responsive
-- séparation utilisateur/admin
-- emplacement prévu pour base de données, SMS et paiement
+Les messages ne doivent être envoyés qu'à des destinataires autorisés, dans le respect des règles applicables et des mécanismes de désinscription.
