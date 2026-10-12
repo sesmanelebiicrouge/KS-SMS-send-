@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@supabase/ssr": "0.7.0",
     "jose": "^6.1.0",
     "next": "^16.0.0",
     "react": "^19.0.0",
