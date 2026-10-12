@@ -9,6 +9,8 @@ Application Next.js en français pour composer et préparer des SMS.
 - Message de 1 à 2 000 caractères et estimation indicative des segments.
 - Zone de rapport prévue pour afficher un statut par numéro : en attente, accepté par le fournisseur, livré ou échec.
 
+Aucun numéro de téléphone n’est requis pour créer ou récupérer un compte : l’authentification de compte se fait par e-mail. Le numéro de téléphone saisi dans le formulaire principal est uniquement celui du destinataire du SMS.
+
 ## État réel et sécurité
 
 L’interface et la validation sont présentes, mais **l’envoi SMS réel est volontairement désactivé** tant qu’un fournisseur, l’authentification serveur, les quotas et la journalisation ne sont pas configurés. Aucun succès ni statut de livraison ne doit être affiché sans confirmation du fournisseur.
