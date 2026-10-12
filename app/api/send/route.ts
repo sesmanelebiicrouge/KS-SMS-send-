@@ -5,8 +5,8 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
  const clientId = process.env.ORANGE_CLIENT_ID;
  const clientSecret = process.env.ORANGE_CLIENT_SECRET;
- const senderAddress = process.env.ORANGE_SENDER_ADDRESS || "tel:+2250000";
- if (!clientId || !clientSecret) return NextResponse.json({ error: "Configuration Orange incomplète dans Vercel." }, { status: 503 });
+ const senderAddress = process.env.ORANGE_SENDER_ADDRESS;
+ if (!clientId || !clientSecret || !senderAddress) return NextResponse.json({ error: "Configuration Orange incomplète dans Vercel : identifiants et adresse d’expéditeur autorisée obligatoires." }, { status: 503 });
 
  let body: { senderName?: unknown; phone?: unknown; message?: unknown };
  try { body = await request.json(); } catch { return NextResponse.json({ error: "Requête invalide." }, { status: 400 }); }
