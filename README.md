@@ -1,48 +1,42 @@
-# KS SMS Send — version prête à déployer
+# KS SMS Send
 
-Cette version transforme l'ancien fichier HTML en projet Next.js structuré pour un déploiement Vercel.
+Application Next.js en français pour composer et préparer des SMS.
 
-## Important
+## Fonctionnalités de l’interface
 
-Le projet est **prêt pour le déploiement**, mais il ne prétend pas encore envoyer des SMS réels ni traiter des cartes bancaires.
+- Identifiant d’expéditeur alphanumérique (jusqu’à 11 caractères; l’acceptation dépend du pays et de l’opérateur).
+- Un ou plusieurs numéros au format international, avec validation et suppression des doublons.
+- Message de 1 à 2 000 caractères et estimation indicative des segments.
+- Zone de rapport prévue pour afficher un statut par numéro : en attente, accepté par le fournisseur, livré ou échec.
 
-Il faut encore connecter :
-1. une base de données pour les comptes, crédits et historiques ;
-2. un vrai système d'authentification serveur ;
-3. un fournisseur SMS/API ;
-4. un prestataire de paiement sécurisé.
+Aucun numéro de téléphone n’est requis pour créer ou récupérer un compte : l’authentification de compte se fait par e-mail. Le numéro de téléphone saisi dans le formulaire principal est uniquement celui du destinataire du SMS.
 
-Ne mets jamais de numéro de carte, CVV ou OTP dans le code ou dans le chat.
+## État réel et sécurité
 
-## Installation
+L’interface et la validation sont présentes, mais **l’envoi SMS réel est volontairement désactivé** tant qu’un fournisseur, l’authentification serveur, les quotas et la journalisation ne sont pas configurés. Aucun succès ni statut de livraison ne doit être affiché sans confirmation du fournisseur.
+
+Pour connaître la livraison réelle, le fournisseur doit prendre en charge les reçus de livraison (DLR) et appeler un webhook sécurisé. Le serveur devra vérifier ce webhook et enregistrer le statut associé à chaque identifiant de message. « Envoyé » ne signifie pas nécessairement « reçu ».
+
+## Authentification e-mail OTP
+
+La page `/register` contient le parcours Supabase Auth : demande d’un code par e-mail, renvoi et vérification du code. Son fonctionnement réel **n’est pas encore vérifié de bout en bout** : il faut un projet Supabase accessible, les variables `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY`, le modèle e-mail avec `{{ .Token }}` si un code numérique est souhaité, SMTP de production et URL autorisées correctes.
+
+Ne jamais exposer la clé `service_role` ou une clé secrète dans le navigateur.
+
+## Installation et contrôles
 
 ```bash
 npm install
+cp .env.example .env.local
 npm run dev
+npm run typecheck
+npm run lint
+npm run build
 ```
 
-Puis ouvrir http://localhost:3000
+## Étapes restantes avant production
 
-## Variables d'environnement
-
-Copie `.env.example` vers `.env.local` et renseigne les valeurs nécessaires.
-
-`SESSION_SECRET` doit être une longue valeur aléatoire.
-
-## Déploiement Vercel
-
-1. Mets ce dossier dans un dépôt GitHub.
-2. Importe le dépôt dans Vercel.
-3. Ajoute les variables d'environnement dans Vercel.
-4. Lance le déploiement.
-
-Le endpoint `/api/health` permet de vérifier l'état des intégrations.
-
-## Architecture suivante
-
-- Next.js App Router
-- API Route pour health check
-- configuration par variables d'environnement
-- interface responsive
-- séparation utilisateur/admin
-- emplacement prévu pour base de données, SMS et paiement
+1. Connecter et tester le vrai projet Supabase et protéger les API par une session serveur.
+2. Choisir un fournisseur SMS disponible dans les pays visés et vérifier l’autorisation de l’identifiant expéditeur.
+3. Configurer l’envoi, les quotas, la protection anti-doublon et le journal d’audit.
+4. Configurer un webhook de reçus de livraison et tester les statuts réels.
