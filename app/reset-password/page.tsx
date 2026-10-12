@@ -127,7 +127,7 @@ export default function ResetPasswordPage() {
           <button className="primaryButton authButton" type="submit" disabled={busy}>{busy ? "Enregistrement…" : "Enregistrer le nouveau mot de passe"}</button>
         </form>}
         {notice && <div className={"notice " + notice.kind} role="status" aria-live="polite">{notice.text}</div>}
-        <p className="authFoot">La récupération par code nécessite que le modèle e-mail « Reset Password » de Supabase contienne {{ .Token }}. La configuration et l'envoi réel doivent être testés dans le projet Supabase.</p>
+        <p className="authFoot">La récupération par code nécessite que le modèle e-mail « Reset Password » de Supabase contienne {"{{ .Token }}"} . La configuration et l'envoi réel doivent être testés dans le projet Supabase.</p>
       </section>
       <footer><span>© {new Date().getFullYear()} KS SMS Send</span><Link className="textButton" href="/register">Créer un compte</Link></footer>
     </main>
