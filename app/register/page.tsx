@@ -123,6 +123,7 @@ export default function RegisterPage() {
         )}
 
         {notice && <div className={"notice " + notice.kind} role="status" aria-live="polite">{notice.text}</div>}
+        <p className="authFoot"><Link className="textButton" href="/reset-password">Mot de passe oublié ? Récupérer par e-mail</Link></p>
         <p className="authFoot">En créant un compte, vous acceptez d&apos;utiliser le service conformément aux règles applicables et aux préférences de vos destinataires.</p>
       </section>
       <footer><span>© {new Date().getFullYear()} KS SMS Send</span><Link className="textButton" href="/">Retour à l&apos;accueil</Link></footer>
