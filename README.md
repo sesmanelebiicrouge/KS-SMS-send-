@@ -4,10 +4,10 @@ Application Next.js pour préparer des campagnes SMS.
 
 ## Prérequis
 
-- Node.js compatible avec la version de Next.js installée
+- Node.js compatible avec Next.js
 - npm
-- Un projet Supabase pour l'authentification et la persistance (pas encore connecté à ce dépôt)
-- Un fournisseur SMS pris en charge, avec un compte et une clé API côté serveur
+- Un projet Supabase pour Auth et la persistance
+- Un fournisseur SMS pris en charge, avec clé API conservée côté serveur
 
 ## Installation
 
@@ -25,16 +25,27 @@ npm run lint
 npm run build
 ```
 
+## Authentification e-mail OTP
+
+La page `/register` demande une adresse e-mail, envoie un code à usage unique via Supabase Auth, vérifie ce code et ouvre une session côté navigateur.
+
+Pour activer ce parcours :
+
+1. Définissez `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` avec les valeurs publiques de votre projet Supabase.
+2. Dans Supabase Authentication, activez l'inscription par e-mail et configurez l'envoi SMTP pour la production.
+3. Dans le modèle d'e-mail de confirmation, incluez le code `{{ .Token }}` si vous souhaitez saisir un OTP numérique. Un modèle configuré uniquement pour un lien magique ne présentera pas le code comme attendu.
+4. Configurez le Site URL et les URL autorisées dans Supabase.
+5. Testez en production avec un compte e-mail de contrôle et vérifiez les limites de débit.
+
+La clé `service_role` / secret Supabase ne doit jamais être exposée dans le navigateur.
+
 ## État actuel
 
-- Interface responsive de composition de SMS.
-- Nettoyage et dédoublonnage des destinataires dans l'interface.
-- Validation côté serveur du corps JSON, des numéros internationaux, des doublons et de la longueur du message.
-- Endpoint `GET /api/health` pour vérifier que l'application répond.
-- Endpoint `POST /api/sms/send` qui **refuse volontairement l'envoi** tant que l'authentification, les limites d'envoi, la journalisation et un fournisseur réel ne sont pas configurés.
+- Interface responsive de composition SMS, validation des numéros et suppression des doublons.
+- Page d'inscription et confirmation e-mail par OTP via Supabase Auth.
+- Endpoint `GET /api/health`.
+- Endpoint `POST /api/sms/send` qui refuse volontairement l'envoi tant qu'un fournisseur réel, l'authentification serveur, les quotas et la journalisation ne sont pas configurés.
 
-## Important avant la mise en production
+## Avant la mise en production
 
-Aucun SMS réel ne sera envoyé par cette version. Il faut encore choisir le fournisseur SMS, connecter Supabase, mettre en place l'authentification serveur, les politiques RLS, une limitation de débit durable, une protection contre les envois répétés, les journaux d'audit et les statuts de livraison. Ne jamais exposer une clé secrète du fournisseur dans le navigateur ni la committer dans Git.
-
-Les messages ne doivent être envoyés qu'à des destinataires autorisés, dans le respect des règles applicables et des mécanismes de désinscription.
+Il faut encore connecter et vérifier le vrai projet Supabase, protéger les pages et les API par une session serveur, ajouter les tables de profil/historique avec RLS, choisir le fournisseur SMS, puis mettre en place quotas, idempotence, journaux d'audit et statuts de livraison. Les SMS ne doivent être envoyés qu'aux destinataires autorisés.
