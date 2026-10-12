@@ -57,13 +57,13 @@ export default function Home() {
   return (
     <main className="shell">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="KS SMS Send accueil"><span className="brandIcon">KS</span><span>KS SMS <b>Send</b></span></a>
+        <Link className="brand" href="/" aria-label="KS SMS Send accueil"><span className="brandIcon">KS</span><span>KS SMS <b>Send</b></span></Link>
         <div className="topActions"><Link className="registerLink" href="/register">Créer un compte</Link><span className="environment"><i /> Espace SMS</span></div>
       </header>
       <section className="hero">
         <p className="eyebrow">MESSAGERIE PROFESSIONNELLE</p>
         <h1>Vos messages, <span>en toute simplicité.</span></h1>
-        <p className="subheading">Préparez votre campagne SMS et vérifiez les destinataires avant l'envoi.</p>
+        <p className="subheading">Préparez votre campagne SMS et vérifiez les destinataires avant l&apos;envoi.</p>
       </section>
       <div className="grid">
         <section className="panel compose">
@@ -93,7 +93,7 @@ export default function Home() {
             <div className="infoIcon">i</div><h3>Avant le premier envoi</h3>
             <p>Le serveur doit être connecté à un fournisseur SMS et à une authentification avant tout envoi réel.</p>
             <button className="textButton" type="button" onClick={() => setShowSetup((value) => !value)} aria-expanded={showSetup}>{showSetup ? "Masquer les prérequis" : "Voir les prérequis"} →</button>
-            {showSetup && <ul className="setupList"><li>Authentification et session serveur</li><li>Fournisseur SMS et clé conservée côté serveur</li><li>Limites d'envoi et contrôle anti-doublon</li><li>Journal des statuts et coûts par destination</li></ul>}
+            {showSetup && <ul className="setupList"><li>Authentification et session serveur</li><li>Fournisseur SMS et clé conservée côté serveur</li><li>Limites d&apos;envoi et contrôle anti-doublon</li><li>Journal des statuts et coûts par destination</li></ul>}
           </section>
         </aside>
       </div>
