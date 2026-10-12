@@ -1,51 +1,40 @@
 # KS SMS Send
 
-Application Next.js pour préparer des campagnes SMS.
+Application Next.js en français pour composer et préparer des SMS.
 
-## Prérequis
+## Fonctionnalités de l’interface
 
-- Node.js compatible avec Next.js
-- npm
-- Un projet Supabase pour Auth et la persistance
-- Un fournisseur SMS pris en charge, avec clé API conservée côté serveur
+- Identifiant d’expéditeur alphanumérique (jusqu’à 11 caractères; l’acceptation dépend du pays et de l’opérateur).
+- Un ou plusieurs numéros au format international, avec validation et suppression des doublons.
+- Message de 1 à 2 000 caractères et estimation indicative des segments.
+- Zone de rapport prévue pour afficher un statut par numéro : en attente, accepté par le fournisseur, livré ou échec.
 
-## Installation
+## État réel et sécurité
+
+L’interface et la validation sont présentes, mais **l’envoi SMS réel est volontairement désactivé** tant qu’un fournisseur, l’authentification serveur, les quotas et la journalisation ne sont pas configurés. Aucun succès ni statut de livraison ne doit être affiché sans confirmation du fournisseur.
+
+Pour connaître la livraison réelle, le fournisseur doit prendre en charge les reçus de livraison (DLR) et appeler un webhook sécurisé. Le serveur devra vérifier ce webhook et enregistrer le statut associé à chaque identifiant de message. « Envoyé » ne signifie pas nécessairement « reçu ».
+
+## Authentification e-mail OTP
+
+La page `/register` contient le parcours Supabase Auth : demande d’un code par e-mail, renvoi et vérification du code. Son fonctionnement réel **n’est pas encore vérifié de bout en bout** : il faut un projet Supabase accessible, les variables `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY`, le modèle e-mail avec `{{ .Token }}` si un code numérique est souhaité, SMTP de production et URL autorisées correctes.
+
+Ne jamais exposer la clé `service_role` ou une clé secrète dans le navigateur.
+
+## Installation et contrôles
 
 ```bash
 npm install
 cp .env.example .env.local
 npm run dev
-```
-
-Commandes de vérification :
-
-```bash
 npm run typecheck
 npm run lint
 npm run build
 ```
 
-## Authentification e-mail OTP
+## Étapes restantes avant production
 
-La page `/register` demande une adresse e-mail, envoie un code à usage unique via Supabase Auth, vérifie ce code et ouvre une session côté navigateur.
-
-Pour activer ce parcours :
-
-1. Définissez `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` avec les valeurs publiques de votre projet Supabase.
-2. Dans Supabase Authentication, activez l'inscription par e-mail et configurez l'envoi SMTP pour la production.
-3. Dans le modèle d'e-mail de confirmation, incluez le code `{{ .Token }}` si vous souhaitez saisir un OTP numérique. Un modèle configuré uniquement pour un lien magique ne présentera pas le code comme attendu.
-4. Configurez le Site URL et les URL autorisées dans Supabase.
-5. Testez en production avec un compte e-mail de contrôle et vérifiez les limites de débit.
-
-La clé `service_role` / secret Supabase ne doit jamais être exposée dans le navigateur.
-
-## État actuel
-
-- Interface responsive de composition SMS, validation des numéros et suppression des doublons.
-- Page d'inscription et confirmation e-mail par OTP via Supabase Auth.
-- Endpoint `GET /api/health`.
-- Endpoint `POST /api/sms/send` qui refuse volontairement l'envoi tant qu'un fournisseur réel, l'authentification serveur, les quotas et la journalisation ne sont pas configurés.
-
-## Avant la mise en production
-
-Il faut encore connecter et vérifier le vrai projet Supabase, protéger les pages et les API par une session serveur, ajouter les tables de profil/historique avec RLS, choisir le fournisseur SMS, puis mettre en place quotas, idempotence, journaux d'audit et statuts de livraison. Les SMS ne doivent être envoyés qu'aux destinataires autorisés.
+1. Connecter et tester le vrai projet Supabase et protéger les API par une session serveur.
+2. Choisir un fournisseur SMS disponible dans les pays visés et vérifier l’autorisation de l’identifiant expéditeur.
+3. Configurer l’envoi, les quotas, la protection anti-doublon et le journal d’audit.
+4. Configurer un webhook de reçus de livraison et tester les statuts réels.
