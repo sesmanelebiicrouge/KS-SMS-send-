@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import Link from "next/link";
 
 type Notice = { kind: "success" | "error"; text: string };
 
@@ -57,7 +58,7 @@ export default function Home() {
     <main className="shell">
       <header className="topbar">
         <a className="brand" href="/" aria-label="KS SMS Send accueil"><span className="brandIcon">KS</span><span>KS SMS <b>Send</b></span></a>
-        <span className="environment"><i /> Espace SMS</span>
+        <div className="topActions"><Link className="registerLink" href="/register">Créer un compte</Link><span className="environment"><i /> Espace SMS</span></div>
       </header>
       <section className="hero">
         <p className="eyebrow">MESSAGERIE PROFESSIONNELLE</p>
