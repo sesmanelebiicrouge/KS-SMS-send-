@@ -36,7 +36,7 @@ export async function GET() {
     orangeClientSecretConfigured: Boolean(process.env.ORANGE_CLIENT_SECRET),
     orangeSenderAddressConfigured: Boolean(
       process.env.ORANGE_SENDER_ADDRESS &&
-      /^tel:\\+[0-9]{6,15}$/.test(process.env.ORANGE_SENDER_ADDRESS),
+      /^tel:\+[0-9]{6,15}$/.test(process.env.ORANGE_SENDER_ADDRESS),
     ),
     orangeSenderNameConfigured: Boolean(
       process.env.ORANGE_SENDER_NAME &&
