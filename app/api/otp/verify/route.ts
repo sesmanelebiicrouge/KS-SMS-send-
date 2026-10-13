@@ -62,7 +62,6 @@ export async function POST(request: Request) {
     const response = reply(
       {
         verified: true,
-        verificationToken,
         tokenExpiresIn: 600,
         message: "Numéro vérifié. Tu peux revenir au formulaire d’envoi pendant les 10 prochaines minutes.",
       },
