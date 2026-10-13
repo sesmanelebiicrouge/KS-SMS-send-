@@ -13,9 +13,17 @@ export default function Home() {
 
  async function send(event: React.FormEvent<HTMLFormElement>) {
   event.preventDefault(); setFeedback(""); setOk(false);
-  const recipient = phone.replace(/[\s()-]/g, "");
+  const rawRecipient = phone.replace(/[\s()-]/g, "");
+  // Accept common Côte d’Ivoire input formats and normalize before calling the strict API.
+  const recipient = rawRecipient.startsWith("+")
+   ? rawRecipient
+   : rawRecipient.startsWith("225")
+    ? `+${rawRecipient}`
+    : /^0[0-9]{9}$/.test(rawRecipient)
+     ? `+225${rawRecipient}`
+     : rawRecipient;
   if (!sender.trim()) { setFeedback("Saisis le nom ou l’identifiant d’expéditeur autorisé par Orange."); return; }
-  if (!/^\+?[0-9]{8,15}$/.test(recipient)) { setFeedback("Numéro invalide. Utilise l’indicatif du pays, par exemple +2250700000000."); return; }
+  if (!/^\+[1-9][0-9]{7,14}$/.test(recipient)) { setFeedback("Numéro invalide. Pour la Côte d’Ivoire, utilise +225 suivi du numéro, par exemple +2250700000000."); return; }
   if (!message.trim()) { setFeedback("Écris le texte du SMS."); return; }
   setBusy(true);
   try {
@@ -43,7 +51,8 @@ export default function Home() {
       <span style={{ color:"#94a3b8", fontSize:12, fontWeight:400 }}>Le nom doit être validé par Orange. Maximum 11 caractères alphanumériques.</span>
      </label>
      <label style={{ display:"grid", gap:8, fontWeight:700 }}>Numéro du receveur
-      <input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+225 07 00 00 00 00" inputMode="tel" style={field} required />
+      <input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+225 07 00 00 00 00" inputMode="tel" autoComplete="tel" style={field} required />
+      <span style={{ color:"#94a3b8", fontSize:12, fontWeight:400 }}>Les formats ivoiriens commençant par 0 ou 225 sont convertis automatiquement.</span>
      </label>
      <label style={{ display:"grid", gap:8, fontWeight:700 }}>Texte du message
       <textarea value={message} onChange={e=>setMessage(e.target.value)} placeholder="Écris ton message ici…" rows={5} maxLength={1000} style={{ ...field, resize:"vertical", lineHeight:1.5 }} required />
