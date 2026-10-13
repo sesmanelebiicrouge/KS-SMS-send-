@@ -1,50 +1,59 @@
 # KS SMS Send
 
-Site web Next.js pour préparer et envoyer des SMS via l’API Orange Developer.
+Application Next.js en français pour envoyer des SMS avec Orange Developer et confirmer un numéro par OTP.
 
-## Fonctionnalités actuelles
+## Fonctions
 
-- Formulaire mobile avec nom/ID d’expéditeur, numéro du destinataire et texte du SMS.
-- Validation du numéro au format international et des champs obligatoires.
-- Compteur de caractères (limite actuelle de 1 000 caractères).
-- Bouton d’envoi avec état « Envoi en cours… ».
-- Messages d’erreur lisibles en français.
-- Appel serveur à Orange OAuth puis à l’API SMS : les clés restent côté serveur.
-- Réponse distinguant une demande acceptée par Orange d’une livraison réellement confirmée.
-- Métadonnées et styles de base en français, adaptés au mobile.
+- Envoi de SMS génériques via `POST /api/send`.
+- Demande d'un code OTP à 6 chiffres via `POST /api/otp/request`.
+- Code stocké sous forme de HMAC, expiration après 5 minutes, vérification à usage unique.
+- Limites de demandes par numéro et adresse IP via Redis persistant.
+- Jeton de vérification signé valable 10 minutes, validable côté serveur via `POST /api/otp/verify-token`.
+- Réponses API sans cache et secrets conservés côté serveur.
+- Vérifications TypeScript et build automatisées sur GitHub Actions.
 
-## Variables Vercel nécessaires
+## Variables serveur nécessaires
 
-Configurer les trois variables côté serveur pour l’environnement Production (et Preview si nécessaire) :
+À configurer dans Vercel pour les environnements souhaités (Preview pour test, Production pour mise en service) :
 
 - `ORANGE_CLIENT_ID` : identifiant de l’application Orange Developer.
 - `ORANGE_CLIENT_SECRET` : secret de l’application Orange Developer.
-- `ORANGE_SENDER_ADDRESS` : adresse d’expéditeur SMS exacte fournie/autorisé par Orange, au format attendu par le contrat API (par exemple une adresse `tel:+...` si c’est celle attribuée à ton compte).
+- `ORANGE_SENDER_ADDRESS` : adresse d’expéditeur exacte attribuée par Orange, au format attendu par l’API (par exemple `tel:+...`).
+- `ORANGE_SENDER_NAME` : nom d’expéditeur personnalisé approuvé par Orange. Dans la version actuelle de `POST /api/send`, cette variable est obligatoire et le nom envoyé doit correspondre exactement à cette valeur.
+- `UPSTASH_REDIS_REST_URL` : URL REST de la base Redis/Upstash persistante.
+- `UPSTASH_REDIS_REST_TOKEN` : jeton REST Redis/Upstash.
+- `OTP_SECRET` : secret aléatoire d’au moins 32 octets pour hacher les OTP et signer les jetons.
+- `ORANGE_SMS_ENABLED` : laisser `false` pendant la configuration et les tests. Passer à `true` uniquement après validation des identifiants, du contrat/crédit SMS, de l’expéditeur autorisé et de Redis. Cette variable doit être définie dans l’environnement Vercel du déploiement à tester.
 
-Ne publie jamais les valeurs secrètes dans le dépôt GitHub, dans le navigateur ou dans une capture d’écran. Ne remplace pas l’adresse d’expéditeur par une valeur inventée.
+Génère `OTP_SECRET` dans un gestionnaire de secrets ou un générateur cryptographique fiable. N’envoie jamais de secret dans GitHub, dans le navigateur, dans une capture d’écran ou dans le chat.
+
+## Distinction importante sur l’OTP
+
+La page `/otp` vérifie le numéro de téléphone par SMS afin d’autoriser temporairement l’envoi depuis le formulaire. Ce parcours ne remplace pas l’OTP par e-mail de Supabase pour la création d’un compte ou la réinitialisation d’un mot de passe : ces parcours doivent rester gérés séparément dans Supabase Auth.
+
+## API OTP
+
+- `POST /api/otp/request` avec `{ "phone": "+2250700000000" }`: envoie un code si la configuration et les limites le permettent.
+- `POST /api/otp/verify` avec `{ "phone": "+2250700000000", "code": "123456" }`: vérifie le code et renvoie un jeton signé.
+- `POST /api/otp/verify-token` avec `{ "token": "..." }`: valide la signature et l’expiration du jeton côté serveur.
+- `GET /api/health`: indique seulement si certaines variables sont présentes ; ne teste pas les identifiants Orange et n’envoie aucun SMS.
+
+## Sécurité et limites
+
+- L’OTP expire en 5 minutes, est à usage unique et est conservé sous forme de HMAC.
+- Limitation persistante : au plus 3 demandes par numéro et 10 par IP sur 10 minutes ; au plus 5 vérifications par numéro sur 5 minutes.
+- Redis/Upstash est obligatoire pour la protection persistante. Si le stockage n’est pas configuré ou est indisponible, l’API échoue en mode fermé.
+- Le jeton signé est une preuve de vérification temporaire. L’application qui l’utilise doit le valider côté serveur ; ne te fie pas uniquement au navigateur.
+- Avant ouverture publique, ajouter l’authentification de l’application appelante, une politique de coûts/quotas et une surveillance des envois. Ne publie pas un endpoint SMS générique sans protection.
+- L’acceptation par Orange ne garantit pas que le SMS a été livré. Les accusés de réception Orange ne sont pas encore intégrés.
 
 ## Développement
 
 ```bash
 npm install
 npm run dev
+npm run typecheck
+npm run build
 ```
 
-Ouvrir http://localhost:3000.
-
-## API
-
-- `GET /api/health` : vérifie uniquement la présence des variables de configuration ; ne teste pas l’authentification Orange et n’envoie aucun SMS.
-- `POST /api/send` : valide les champs, demande un jeton OAuth à Orange puis soumet le SMS à l’API Orange.
-
-## Limites importantes avant une ouverture publique
-
-- Une réponse positive de l’API signifie que la demande a été acceptée, pas que le téléphone du destinataire a reçu le SMS.
-- Les accusés de réception Orange (Delivery Receipt) ne sont pas encore intégrés ; la confirmation de livraison réelle n’est donc pas disponible.
-- Avant d’ouvrir l’envoi à tout le public, ajouter une authentification, une limitation de débit persistante, une protection contre l’abus et un suivi des crédits/coûts SMS. Sans ces protections, un endpoint public peut être abusé.
-- Le nom d’expéditeur doit être accepté par Orange. L’adresse technique `ORANGE_SENDER_ADDRESS` doit correspondre à la configuration réelle du compte.
-- Aucun paiement ni système de crédits utilisateur n’est implémenté pour le moment.
-
-## Déploiement
-
-Vercel doit reconstruire automatiquement le projet après les commits sur la branche `main), si le dépôt y est déjà connecté. Vérifier le résultat du déploiement et tester d’abord avec un numéro que tu contrôles.
+Vercel peut déployer automatiquement les commits sur `main` si le dépôt est connecté. Les corrections de cette branche doivent être testées via une Preview avant toute fusion dans `main`.

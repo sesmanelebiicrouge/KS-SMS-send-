@@ -34,6 +34,7 @@ export default function Home() {
     <div style={{ width:48, height:48, borderRadius:14, display:"grid", placeItems:"center", background:"#e11d48", fontWeight:800, fontSize:20 }}>KS</div>
     <div><div style={{ fontWeight:800, fontSize:22 }}>KS SMS Send</div><div style={{ color:"#94a3b8", fontSize:13 }}>Envoi de SMS</div></div>
    </header>
+   <p style={{ margin:"0 0 18px", color:"#cbd5e1" }}>Tu veux confirmer un numéro avec un code SMS ? <a href="/otp" style={{ color:"#fb7185", fontWeight:800 }}>Ouvrir la confirmation OTP →</a></p>
    <section style={{ border:"1px solid #253249", borderRadius:22, padding:"clamp(20px,5vw,34px)", background:"#111c30" }}>
     <h1 style={{ fontSize:"clamp(28px,6vw,40px)", marginTop:0 }}>Envoyer un SMS</h1>
     <form onSubmit={send} style={{ display:"grid", gap:18 }}>
