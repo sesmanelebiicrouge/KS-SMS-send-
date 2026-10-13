@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
-import { createVerificationToken, normalizePhone, otpDigest, sha256 } from "@/lib/otp";
-import { incrementRateLimit, redisCommand } from "@/lib/redis";
+import { createVerificationToken, normalizePhone, otpDigest, sha256 } from "../../../../lib/otp";
+import { incrementRateLimit, redisCommand } from "../../../../lib/redis";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
