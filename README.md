@@ -19,12 +19,17 @@ Application Next.js en français pour envoyer des SMS avec Orange Developer et c
 - `ORANGE_CLIENT_ID` : identifiant de l’application Orange Developer.
 - `ORANGE_CLIENT_SECRET` : secret de l’application Orange Developer.
 - `ORANGE_SENDER_ADDRESS` : adresse d’expéditeur exacte attribuée par Orange, au format attendu par l’API (par exemple `tel:+...`).
-- `ORANGE_SENDER_NAME` : facultatif, nom d’expéditeur approuvé par Orange. Ne pas inventer cette valeur.
+- `ORANGE_SENDER_NAME` : nom d’expéditeur personnalisé approuvé par Orange. Dans la version actuelle de `POST /api/send`, cette variable est obligatoire et le nom envoyé doit correspondre exactement à cette valeur.
 - `UPSTASH_REDIS_REST_URL` : URL REST de la base Redis/Upstash persistante.
 - `UPSTASH_REDIS_REST_TOKEN` : jeton REST Redis/Upstash.
 - `OTP_SECRET` : secret aléatoire d’au moins 32 octets pour hacher les OTP et signer les jetons.
+- `ORANGE_SMS_ENABLED` : laisser `false` pendant la configuration et les tests. Passer à `true` uniquement après validation des identifiants, du contrat/crédit SMS, de l’expéditeur autorisé et de Redis. Cette variable doit être définie dans l’environnement Vercel du déploiement à tester.
 
 Génère `OTP_SECRET` dans un gestionnaire de secrets ou un générateur cryptographique fiable. N’envoie jamais de secret dans GitHub, dans le navigateur, dans une capture d’écran ou dans le chat.
+
+## Distinction importante sur l’OTP
+
+La page `/otp` vérifie le numéro de téléphone par SMS afin d’autoriser temporairement l’envoi depuis le formulaire. Ce parcours ne remplace pas l’OTP par e-mail de Supabase pour la création d’un compte ou la réinitialisation d’un mot de passe : ces parcours doivent rester gérés séparément dans Supabase Auth.
 
 ## API OTP
 
