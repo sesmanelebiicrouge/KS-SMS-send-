@@ -26,7 +26,12 @@ export async function POST(request: Request) {
   if (!phone || !/^\d{6}$/.test(code)) {
     return reply({ error: "Numéro ou code invalide." }, 400);
   }
-  if (!process.env.OTP_SECRET || Buffer.byteLength(process.env.OTP_SECRET, "utf8") < 32) {
+  if (
+    !process.env.OTP_SECRET ||
+    Buffer.byteLength(process.env.OTP_SECRET, "utf8") < 32 ||
+    !process.env.UPSTASH_REDIS_REST_URL ||
+    !process.env.UPSTASH_REDIS_REST_TOKEN
+  ) {
     return reply({ error: "Configuration serveur incomplète." }, 503);
   }
 
@@ -53,15 +58,24 @@ export async function POST(request: Request) {
     await redisCommand("DEL", key);
     await redisCommand("DEL", `rl:otp:verify:${phoneKey}`).catch(() => undefined);
 
-    return reply(
+    const verificationToken = createVerificationToken(phone);
+    const response = reply(
       {
         verified: true,
-        verificationToken: createVerificationToken(phone),
+        verificationToken,
         tokenExpiresIn: 600,
-        message: "Numéro vérifié. Le jeton doit être vérifié côté serveur avant toute utilisation.",
+        message: "Numéro vérifié. Tu peux revenir au formulaire d’envoi pendant les 10 prochaines minutes.",
       },
       200,
     );
+    response.cookies.set("ks_otp_verified", verificationToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 600,
+    });
+    return response;
   } catch {
     return reply({ error: "Le service de vérification est temporairement indisponible." }, 503);
   }
