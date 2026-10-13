@@ -1,4 +1,4 @@
-import { createHash, createHmac } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
 export function normalizePhone(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -39,4 +39,41 @@ export function getClientIp(request: Request): string {
   if (realIp) return realIp.slice(0, 100);
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   return forwarded ? forwarded.slice(0, 100) : "unknown";
+}
+
+export function verifyVerificationToken(token: unknown): { phone: string; expiresAt: number } | null {
+  if (typeof token !== "string" || token.length > 2048) return null;
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const [payload, signature] = parts;
+  if (!payload || !signature) return null;
+
+  let expected: string;
+  try {
+    expected = createHmac("sha256", getOtpSecret()).update(payload).digest("base64url");
+  } catch {
+    return null;
+  }
+  const a = Buffer.from(signature);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !requireTimingSafeEqual(a, b)) return null;
+
+  try {
+    const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as {
+      phone?: unknown;
+      purpose?: unknown;
+      exp?: unknown;
+    };
+    const phone = normalizePhone(data.phone);
+    if (!phone || data.purpose !== "phone-verification" || typeof data.exp !== "number") return null;
+    if (!Number.isInteger(data.exp) || data.exp <= Math.floor(Date.now() / 1000)) return null;
+    return { phone, expiresAt: data.exp };
+  } catch {
+    return null;
+  }
+}
+
+function requireTimingSafeEqual(a: Buffer, b: Buffer): boolean {
+  // Import lazily through the same Node crypto module to avoid non-constant-time string comparison.
+  return timingSafeEqual(a, b);
 }
