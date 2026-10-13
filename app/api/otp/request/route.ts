@@ -1,8 +1,8 @@
 import { randomInt } from "node:crypto";
 import { NextResponse } from "next/server";
-import { sendOrangeSms } from "@/lib/orange";
-import { getClientIp, normalizePhone, otpDigest, sha256 } from "@/lib/otp";
-import { incrementRateLimit, redisCommand } from "@/lib/redis";
+import { sendOrangeSms } from "../../../../lib/orange";
+import { getClientIp, normalizePhone, otpDigest, sha256 } from "../../../../lib/otp";
+import { incrementRateLimit, redisCommand } from "../../../../lib/redis";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
