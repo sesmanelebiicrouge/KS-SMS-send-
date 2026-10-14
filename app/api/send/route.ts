@@ -55,7 +55,7 @@ export async function POST(request: Request) {
   }
 
   const senderName = typeof body.senderName === "string" ? body.senderName.trim() : "";
-  const phone = (typeof body.phone === "string" ? body.phone : "").replace(/[\\s()-]/g, "");
+  const phone = (typeof body.phone === "string" ? body.phone : "").replace(/[\s()-]/g, "");
   const message = typeof body.message === "string" ? body.message.trim() : "";
 
   if (!senderName || senderName.length > 11 || !/^[A-Za-z0-9 ]+$/.test(senderName)) {
@@ -64,13 +64,13 @@ export async function POST(request: Request) {
   if (senderName !== approvedSenderName) {
     return NextResponse.json({ error: "Ce nom d’expéditeur n’est pas celui approuvé par Orange pour cette application." }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
-  if (!/^\\+[1-9][0-9]{7,14}$/.test(phone)) {
+  if (!/^\+[1-9][0-9]{7,14}$/.test(phone)) {
     return NextResponse.json({ error: "Numéro invalide : utilise le format international +225…" }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
   if (!message || message.length > 1000) {
     return NextResponse.json({ error: "Le message doit contenir de 1 à 1000 caractères." }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
-  if (!/^tel:\\+[0-9]{6,15}$/.test(senderAddress)) {
+  if (!/^tel:\+[0-9]{6,15}$/.test(senderAddress)) {
     return NextResponse.json({ error: "Adresse d’expéditeur Orange invalide dans la configuration serveur." }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }
 
