@@ -1,4 +1,4 @@
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.replace(/\\/+$/, "");
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.replace(/\/+$/, "");
 const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 export async function redisCommand<T>(...command: Array<string | number>): Promise<T> {
