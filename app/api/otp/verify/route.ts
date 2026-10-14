@@ -1,7 +1,6 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createVerificationToken, normalizePhone, otpDigest, sha256 } from "../../../../lib/otp";
-import { incrementRateLimit, redisCommand } from "../../../../lib/redis";
+import { consumeOtpDigest, incrementRateLimit } from "../../../../lib/redis";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +22,7 @@ export async function POST(request: Request) {
 
   const phone = normalizePhone(body.phone);
   const code = typeof body.code === "string" ? body.code.trim() : "";
-  if (!phone || !/^\d{6}$/.test(code)) {
+  if (!phone || !/^\\d{6}$/.test(code)) {
     return reply({ error: "Numéro ou code invalide." }, 400);
   }
   if (
@@ -42,21 +41,12 @@ export async function POST(request: Request) {
       return reply({ error: "Trop de tentatives. Demande un nouveau code plus tard." }, 429);
     }
 
+    // Compare and delete in one Redis script so simultaneous requests cannot reuse an OTP.
     const key = `otp:code:${phoneKey}`;
-    const savedDigest = await redisCommand<string | null>("GET", key);
-    if (!savedDigest) {
-      return reply({ error: "Code expiré ou absent. Demande un nouveau code." }, 400);
+    const consumed = await consumeOtpDigest(key, otpDigest(phone, code));
+    if (!consumed) {
+      return reply({ error: "Code incorrect ou expiré. Demande un nouveau code si nécessaire." }, 400);
     }
-
-    const submittedDigest = otpDigest(phone, code);
-    const saved = Buffer.from(savedDigest, "hex");
-    const submitted = Buffer.from(submittedDigest, "hex");
-    if (saved.length !== submitted.length || !timingSafeEqual(saved, submitted)) {
-      return reply({ error: "Code incorrect ou expiré." }, 400);
-    }
-
-    await redisCommand("DEL", key);
-    await redisCommand("DEL", `rl:otp:verify:${phoneKey}`).catch(() => undefined);
 
     const verificationToken = createVerificationToken(phone);
     const response = reply(
