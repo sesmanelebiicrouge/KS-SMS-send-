@@ -1,4 +1,11 @@
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.replace(/\/+$/, "");
+function trimTrailingSlashes(value: string): string {
+  let result = value;
+  while (result.endsWith("/")) result = result.slice(0, -1);
+  return result;
+}
+
+const configuredRedisUrl = process.env.UPSTASH_REDIS_REST_URL;
+const redisUrl = configuredRedisUrl ? trimTrailingSlashes(configuredRedisUrl) : undefined;
 const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 export async function redisCommand<T>(...command: Array<string | number>): Promise<T> {
