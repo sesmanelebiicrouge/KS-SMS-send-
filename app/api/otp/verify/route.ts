@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   const phone = normalizePhone(body.phone);
   const code = typeof body.code === "string" ? body.code.trim() : "";
-  if (!phone || !/^\\d{6}$/.test(code)) {
+  if (!phone || !/^\d{6}$/.test(code)) {
     return reply({ error: "Numéro ou code invalide." }, 400);
   }
   if (
